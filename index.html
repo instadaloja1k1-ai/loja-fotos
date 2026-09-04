@@ -391,8 +391,9 @@ function render(){
 }
 
 // ---------- config + galeria ----------
-function calcularTotal(qtd){
-  let restante = qtd;
+function calcularTotal(cartIds){
+  const fotos = (cartIds||[]).map(id=>fotosCache.find(f=>f.id===id)).filter(Boolean);
+  let restante = fotos.length;
   let total = 0;
   const detalhes = [];
   const pacotesOrdenados = [...(config.pacotes||[])].filter(p=>p.qtd>0).sort((a,b)=>b.qtd-a.qtd);
@@ -405,8 +406,12 @@ function calcularTotal(qtd){
     }
   }
   if(restante>0){
-    total += restante*(config.precoUnico||0);
-    detalhes.push(`${restante}x foto avulsa = ${formatBRL(restante*(config.precoUnico||0))}`);
+    // fotos que sobraram fora dos pacotes: cada uma cobra pelo próprio preço
+    // (usa o preço específico da foto quando definido, senão o preço único da loja)
+    const individuais = fotos.slice(fotos.length - restante);
+    const somaIndividual = individuais.reduce((acc,f)=>acc + precoDaFoto(f), 0);
+    total += somaIndividual;
+    detalhes.push(`${restante}x foto avulsa = ${formatBRL(somaIndividual)}`);
   }
   return {total, detalhes};
 }
@@ -480,7 +485,7 @@ function renderCart(){
       </div>`;
     }).join('');
   }
-  const {total, detalhes} = calcularTotal(cart.length);
+  const {total, detalhes} = calcularTotal(cart);
   document.getElementById('cart-summary-detalhes').innerHTML = detalhes.map(d=>`<div class="linha"><span>${d}</span></div>`).join('');
   document.getElementById('cart-total').textContent = formatBRL(total);
   document.getElementById('cart-checkout-btn').disabled = cart.length===0;
@@ -499,7 +504,7 @@ function renderCheckout(){
     return;
   }
   document.querySelector('#view-checkout form').style.display = '';
-  const {total, detalhes} = calcularTotal(cart.length);
+  const {total, detalhes} = calcularTotal(cart);
   document.getElementById('checkout-resumo').innerHTML = `
     <div class="linha"><span>${cart.length} foto(s) selecionada(s)</span></div>
     ${detalhes.map(d=>`<div class="linha"><span>${d}</span></div>`).join('')}
@@ -523,7 +528,7 @@ async function finalizarCheckout(ev){
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Gerando Pix...';
   try{
-    const {total} = calcularTotal(cart.length);
+    const {total} = calcularTotal(cart);
     const itensSnapshot = cart.map(id=>{
       const f = fotosCache.find(x=>x.id===id);
       return {fotoId:id, titulo: f ? f.titulo : ''};
