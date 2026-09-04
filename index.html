@@ -141,7 +141,7 @@
       <span id="brand-nome">Loja de Fotos</span>
     </a>
     <nav>
-      <a href="#admin" class="link-admin" onclick="navigate('admin');return false;" style="margin-right:14px;">Área da fotógrafa</a>
+      <a href="#admin" class="link-admin" onclick="navigate('admin');return false;" style="margin-right:14px;">Área administrativa</a>
       <button class="cart-btn" onclick="toggleCart(true)">🛒 Carrinho <span class="cart-badge" id="cart-badge">0</span></button>
     </nav>
   </div>
@@ -201,7 +201,7 @@
 <main id="view-admin" hidden>
   <div id="admin-login-wrap">
     <div class="card">
-      <h2>Área da fotógrafa</h2>
+      <h2>Área administrativa</h2>
       <p class="card-lead">Entre com o mesmo login usado no painel das diaristas.</p>
       <div id="admin-login-alert"></div>
       <form onsubmit="return adminLogin(event)">
@@ -242,7 +242,7 @@
           <input type="text" id="foto-preco-input" placeholder="Ex: 29,90">
         </div>
         <div class="field">
-          <input type="file" id="foto-file-input" accept="image/*">
+          <input type="file" id="foto-file-input" accept="image/jpeg,image/png,image/webp">
         </div>
         <button class="btn btn-primary" id="foto-upload-btn" onclick="uploadFoto()">Enviar foto</button>
         <div id="upload-status" style="margin-top:10px;font-size:.85rem;"></div>
@@ -318,7 +318,7 @@
   </div>
 </div>
 
-<footer>Feito com 💛 · Entrega digital automática após confirmação do pagamento.</footer>
+<footer>Entrega digital automática após confirmação do pagamento.</footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -751,6 +751,11 @@ async function uploadFoto(){
   const precoStr = document.getElementById('foto-preco-input').value.trim();
   if(!fileInput.files || !fileInput.files[0]){
     statusEl.innerHTML = '<span style="color:var(--danger);">Escolha um arquivo de imagem.</span>';
+    return;
+  }
+  const tiposAceitos = ['image/jpeg','image/png','image/webp'];
+  if(!tiposAceitos.includes(fileInput.files[0].type)){
+    statusEl.innerHTML = '<span style="color:var(--danger);">Envie a foto em JPG, PNG ou WEBP. Outros formatos (como GIF) não recebem a marca d\'água corretamente.</span>';
     return;
   }
   btn.disabled = true;
