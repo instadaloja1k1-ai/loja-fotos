@@ -668,6 +668,8 @@ function startAdminListeners(){
     snap.forEach(doc=>lista.push({id:doc.id, ...doc.data()}));
     lista.sort((a,b)=>(a.ordem||0)-(b.ordem||0));
     renderAdminFotos(lista);
+  }, err=>{
+    document.getElementById('admin-fotos-tbody').innerHTML = '<tr><td colspan="5">Não foi possível carregar as fotos. Verifique se as regras do Firestore já foram atualizadas para a loja de fotos.</td></tr>';
   });
   unsubAdminPedidos = db.collection('pedidosFotos').orderBy('createdAt','desc').limit(100).onSnapshot(snap=>{
     const lista = [];
